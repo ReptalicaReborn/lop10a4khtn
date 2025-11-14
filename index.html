@@ -6,6 +6,11 @@
     <title>Ứng dụng Tương tác: Ô nhiễm Không khí</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <script>
+        // Register the datalabels plugin globally
+        Chart.register(ChartDataLabels);
+    </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     
     <style>
@@ -128,7 +133,7 @@
 
             <section id="page-project10a4" class="content-section active">
                 <div class="card max-w-4xl mx-auto">
-                    <h2 class="text-2xl font-bold text-71a6b7 mb-4 border-b pb-2">Dự án Thử nghiệm 10A4: Giới thiệu Đề tài</h2>
+                    <h2 class="text-2xl font-bold text-71a6b7 mb-4 border-b-2 border-71a6b7/50 pb-2">Dự án Thử nghiệm 10A4: Giới thiệu Đề tài</h2>
                     
                     <!-- NỘI DUNG TỪ TEXT.TXT ĐƯỢC CHÈN VÀO ĐÂY -->
                     
@@ -611,21 +616,43 @@
         // Dữ liệu và logic cho biểu đồ So sánh PM2.5 (Bar Chart)
         function initializeCitiesChart() {
             const ctx = document.getElementById('citiesChart').getContext('2d');
+            
+            const pm25Data = [35, 25, 40, 90, 12];
+            const cityLabels = ['Hà Nội', 'TP.HCM', 'Jakarta', 'Delhi', 'London'];
+            const whoGuideline = 5; // WHO Guideline for annual PM2.5 is 5 µg/m³
+
+            // Hàm để lấy màu dựa trên giá trị PM2.5 (gần đúng với thang AQI)
+            function getAqiColor(value) {
+                if (value <= 12) return 'rgba(0, 153, 102, 0.7)';    // Tốt (Xanh lá)
+                if (value <= 35.4) return 'rgba(255, 222, 51, 0.7)'; // Trung bình (Vàng)
+                if (value <= 55.4) return 'rgba(255, 153, 51, 0.7)'; // Kém (Cam)
+                if (value <= 150.4) return 'rgba(204, 0, 51, 0.7)';  // Xấu (Đỏ)
+                return 'rgba(102, 0, 153, 0.7)';                     // Rất xấu (Tím)
+            }
+
             const data = {
-                labels: ['Hà Nội', 'TP.HCM', 'Jakarta', 'Delhi', 'London'],
-                datasets: [{
-                    label: 'PM₂.₅ trung bình năm (µg/m³)',
-                    data: [35, 25, 40, 90, 12], // Số liệu minh họa
-                    backgroundColor: [
-                        '#71a6b7',
-                        '#5a8a9a',
-                        '#bfe0e9',
-                        '#eaf4f7',
-                        '#42b883'
-                    ],
-                    borderColor: '#333',
-                    borderWidth: 1
-                }]
+                labels: cityLabels,
+                datasets: [
+                    {
+                        label: 'PM₂.₅ trung bình năm (µg/m³)',
+                        data: pm25Data,
+                        backgroundColor: pm25Data.map(value => getAqiColor(value)),
+                        borderColor: pm25Data.map(value => getAqiColor(value).replace('0.7', '1')),
+                        borderWidth: 1,
+                        barPercentage: 0.7,
+                        categoryPercentage: 0.8,
+                    },
+                    {
+                        type: 'line',
+                        label: `Ngưỡng khuyến nghị của WHO (${whoGuideline} µg/m³)`,
+                        data: Array(cityLabels.length).fill(whoGuideline),
+                        borderColor: '#007bff',
+                        borderWidth: 2,
+                        fill: false,
+                        pointRadius: 0,
+                        borderDash: [5, 5], // Dotted line
+                    }
+                ]
             };
 
             new Chart(ctx, {
@@ -634,29 +661,61 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    indexAxis: 'y', // Biểu đồ cột ngang
                     plugins: {
                         legend: {
-                            display: false
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                font: { family: 'Inter' },
+                                filter: function(legendItem, chartData) {
+                                    return legendItem.datasetIndex !== 0;
+                                }
+                            }
                         },
                         title: {
                             display: true,
                             text: 'So sánh Nồng độ PM₂.₅ Trung bình tại các Thành phố (µg/m³)',
-                            font: {
-                                size: 16,
-                                family: 'Inter'
+                            font: { size: 16, family: 'Inter' }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += context.parsed.y + ' µg/m³';
+                                    }
+                                    return label;
+                                }
                             }
+                        },
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'top',
+                            formatter: (value, context) => {
+                                return value;
+                            },
+                            font: {
+                                weight: 'bold',
+                                family: 'Inter'
+                            },
+                            color: '#333'
                         }
                     },
                     scales: {
-                        x: {
+                        y: {
                             beginAtZero: true,
                             title: {
                                 display: true,
                                 text: 'Nồng độ PM₂.₅ (µg/m³)',
-                                font: {
-                                    family: 'Inter'
-                                }
+                                font: { family: 'Inter' }
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                font: { family: 'Inter' }
                             }
                         }
                     }
