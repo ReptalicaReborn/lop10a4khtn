@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ứng dụng Tương tác: Ô nhiễm Không khí</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #eaf4f7;
+            color: #333;
+        }
+        .nav-button {
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            color: #71a6b7;
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+        }
+        .nav-button:hover {
+            background-color: #f7f3e9;
+            color: #5a8a9a;
+        }
+        .nav-button.active {
+            background-color: #71a6b7;
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1-2px rgba(0, 0, 0, 0.06);
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .card {
+            background-color: #ffffff;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border: 1px solid #bfe0e9;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 350px;
+        }
+        .chart-container-bar {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 400px;
+            max-height: 500px;
+        }
+        .aqi-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+        .llm-button {
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .llm-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .llm-button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        .spinner {
+            width: 2rem;
+            height: 2rem;
+            border: 4px solid #f7f3e9;
+            border-top: 4px solid #71a6b7;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .advice-output {
+            background-color: #f7f3e9;
+            border: 1px solid #a4d2df;
+            border-radius: 0.5rem;
+            padding: 1rem;
+        }
+        .project-heading {
+            border-left: 5px solid #71a6b7;
+            padding-left: 1rem;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="min-h-screen">
+        <header class="bg-white shadow-sm sticky top-0 z-10 border-b border-bfe0e9">
+            <div class="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center">
+                <h1 class="text-2xl font-bold text-71a6b7">Phân tích: Ô nhiễm Không khí</h1>
+                <nav id="mainNav" class="flex flex-wrap justify-center space-x-2 mt-4 md:mt-0">
+                    <button class="nav-button active" data-page="project10a4">Dự án 10A4 🔬</button>
+                    <button class="nav-button" data-page="overview">Tổng quan</button>
+                    <button class="nav-button" data-page="sources">Nguồn & Chất ô nhiễm</button>
+                    <button class="nav-button" data-page="impact">Tác động</button>
+                    <button class="nav-button" data-page="solutions">Giải pháp</button>
+                    <button class="nav-button" data-page="ai-advisor">AI Tư Vấn ✨</button>
+                </nav>
+            </div>
+        </header>
+
+        <main id="appContent" class="container mx-auto p-4 md:p-8">
+
+            <section id="page-project10a4" class="content-section active">
+                <div class="card max-w-4xl mx-auto">
+                    <h2 class="text-2xl font-bold text-71a6b7 mb-4 border-b pb-2">Dự án Thử nghiệm 10A4: Giới thiệu Đề tài</h2>
+                    
+                    <!-- NỘI DUNG TỪ TEXT.TXT ĐƯỢC CHÈN VÀO ĐÂY -->
+                    
+                    <h3 class="text-xl font-bold text-gray-800 mt-6">Tên Đề tài</h3>
+                    <p class="text-lg text-gray-700 mt-1 mb-4 p-3 bg-f7f3e9 rounded-md border border-a4d2df">Vấn đề ô nhiễm không khí, giải pháp khắc phục, và sử dụng trí tuệ nhân tạo để giúp con người đề phòng các tác nhân gây bệnh</p>
+                    
+                    <h3 class="text-xl font-bold text-gray-800 mt-6">1. Bối cảnh và Tính cấp thiết của Vấn đề</h3>
+                    <p class="text-gray-700 mt-2">Trong những năm gần đây, ô nhiễm không khí đã trở thành một trong những thách thức môi trường và sức khỏe cộng đồng nghiêm trọng nhất tại các đô thị lớn ở Việt Nam. Đặc biệt, nồng độ bụi mịn <span class="font-bold">PM₂.₅</span> thường xuyên vượt ngưỡng an toàn, gây ra nguy cơ cao về các bệnh lý hô hấp và tim mạch cho người dân.</p>
+                    
+                    <p class="font-semibold text-gray-700 mt-4 mb-2">Tính cấp thiết của đề tài xuất phát từ ba khía cạnh:</p>
+                    <ul class="list-disc list-inside ml-4 text-gray-700 space-y-2">
+                        <li><span class="font-semibold text-71a6b7">Môi trường:</span> Cần một giải pháp kỹ thuật hiệu quả để giảm thiểu các chất ô nhiễm tại nguồn hoặc xử lý tại khu vực nhạy cảm (như trường học, bệnh viện).</li>
+                        <li><span class="font-semibold text-71a6b7">Sức khỏe:</span> Người dân thiếu công cụ nhanh chóng, cá nhân hóa để biết cách tự bảo vệ mình trước tình trạng ô nhiễm không ổn định từng ngày.</li>
+                        <li><span class="font-semibold text-71a6b7">Công nghệ:</span> Sự phát triển của Trí tuệ Nhân tạo (AI) mở ra cơ hội để chuyển đổi dữ liệu môi trường phức tạp thành các hành động phòng ngừa đơn giản, kịp thời cho người dùng.</li>
+                    </ul>
+                    
+                    <h3 class="text-xl font-bold text-gray-800 mt-6">2. Mục tiêu Nghiên cứu</h3>
+                    <p class="text-gray-700 mt-2">Đề tài được thực hiện nhằm đạt được các mục tiêu liên ngành sau:</p>
+                    
+                    <h4 class="font-semibold text-gray-800 mt-3 ml-2">2.1. Mục tiêu Nghiên cứu và Phân tích (Môi trường)</h4>
+                    <ul class="list-disc list-inside ml-6 text-gray-700 space-y-1">
+                        <li>Phân tích các nguồn gây ô nhiễm không khí chính tại các khu vực.</li>
+                        <li>Đề xuất và đánh giá một giải pháp khắc phục (kỹ thuật hoặc chính sách) có tính khả thi cao trong môi trường thực tiễn.</li>
+                    </ul>
+
+                    <h4 class="font-semibold text-gray-800 mt-3 ml-2">2.2. Mục tiêu Ứng dụng Công nghệ (AI & Sức khỏe)</h4>
+                    <ul class="list-disc list-inside ml-6 text-gray-700 space-y-1">
+                        <li>Xây dựng một mô hình hoặc ứng dụng dựa trên Trí tuệ Nhân tạo.</li>
+                        <li>Mô hình này có khả năng thu thập dữ liệu AQI (Chỉ số Chất lượng Không khí) theo thời gian thực và đưa ra lời khuyên cá nhân hóa về các biện pháp phòng ngừa.</li>
+                        <li>Ví dụ về lời khuyên: Nên đeo khẩu trang loại nào (N95/y tế), có nên chạy bộ ngoài trời không, nên mở hay đóng cửa sổ.</li>
+                    </ul>
+                    
+                    <h3 class="text-xl font-bold text-gray-800 mt-6">3. Phạm vi Nghiên cứu</h3>
+                    <ul class="list-disc list-inside ml-4 text-gray-700 space-y-2">
+                        <li><span class="font-semibold text-71a6b7">Phạm vi Không gian:</span> Nghiên cứu sẽ tập trung vào dữ liệu ô nhiễm không khí tại Việt Nam.</li>
+                        <li><span class="font-semibold text-71a6b7">Phạm vi Nội dung:</span>
+                            <ul class="list-circle list-inside ml-4 text-gray-700 space-y-1 mt-1">
+                                <li>Tập trung chủ yếu vào các chất ô nhiễm có tác động mạnh nhất đến sức khỏe: Bụi mịn (PM₂.₅), Ozone (O₃), và Sulfur Dioxide (SO₂).</li>
+                                <li>Phần ứng dụng AI tập trung vào việc dự đoán nguy cơ sức khỏe dựa trên dữ liệu ô nhiễm, không đi sâu vào việc phát triển thuật toán AI nền tảng.</li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <h3 class="text-xl font-bold text-gray-800 mt-6">4. Ý nghĩa Khoa học và Thực tiễn</h3>
+                    <ul class="list-disc list-inside ml-4 text-gray-700 space-y-2">
+                        <li><span class="font-semibold text-71a6b7">Về mặt Khoa học:</span> Chứng minh tính hiệu quả của cách tiếp cận liên ngành (kỹ thuật môi trường + khoa học dữ liệu) trong việc giải quyết vấn đề xã hội.</li>
+                        <li><span class="font-semibold text-71a6b7">Về mặt Thực tiễn:</span> Cung cấp một công cụ đơn giản, dễ sử dụng cho cộng đồng để chủ động bảo vệ sức khỏe, từ đó nâng cao nhận thức về chất lượng không khí và thúc đẩy hành động tập thể.</li>
+                    </ul>
+                    <!-- KẾT THÚC NỘI DUNG TỪ TEXT.TXT -->
+                    
+                </div>
+            </section>
+            
+            <!-- Phần 'Tổng quan' đã bị loại bỏ class 'active' -->
+            <section id="page-overview" class="content-section">
+                <div class="card text-center">
+                    <h2 class="text-2xl font-bold text-71a6b7 mb-4">Một Vấn Nạn Toàn Cầu</h2>
+                    
+                    <div class="flex justify-center items-center gap-4 mb-4 max-w-3xl mx-auto">
+                        <p id="tts-text-overview" class="text-lg text-gray-700 text-left flex-grow">Chào mừng bạn đến với ứng dụng phân tích tương tác về ô nhiễm không khí. Phần này cung cấp một cái nhìn tổng quan về mức độ nghiêm trọng của vấn đề, nhấn mạnh tác động toàn cầu của nó. Hãy sử dụng các tab điều hướng ở trên để khám phá các nguồn gây ô nhiễm, tác động cụ thể và các giải pháp khả thi.</p>
+                    </div>
+                    
+                    <div class="bg-f7f3e9 p-6 rounded-lg inline-block border border-a4d2df">
+                        <div class="text-6xl md:text-8xl font-bold text-71a6b7">7 TRIỆU</div>
+                        <div class="text-xl md:text-2xl font-semibold text-gray-800 mt-2">Người tử vong sớm mỗi năm</div>
+                        <p class="text-md text-gray-600 mt-2">(Theo Tổ chức Y tế Thế giới - WHO)</p>
+                    </div>
+                    
+                    <p class="text-lg text-gray-700 mt-8 max-w-3xl mx-auto">Ô nhiễm không khí là sự thay đổi lớn trong thành phần của không khí, chủ yếu do khói, bụi, hơi hoặc các khí lạ được đưa vào không khí, gây ảnh hưởng tiêu cực đến sức khỏe con người và hệ sinh thái.</p>
+                </div>
+            </section>
+
+            <section id="page-sources" class="content-section">
+                <div class="card mb-8">
+                    <h2 class="text-2xl font-bold text-71a6b7 mb-4 text-center">Nguồn Gốc & Chỉ số Đo lường</h2>
+                    <p class="text-lg text-gray-700 mb-8 max-w-4xl mx-auto text-center">Để hiểu rõ về ô nhiễm, chúng ta cần xác định các nguồn phát thải chính và cách chúng ta đo lường chất lượng không khí. Phần này trình bày trực quan các nguồn gây ô nhiễm nhân tạo và giải thích Chỉ số Chất lượng Không khí (AQI), sau đó so sánh nồng độ bụi mịn PM₂.₅ tại các thành phố lớn.</p>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="card">
+                        <h3 class="text-xl font-semibold text-center text-71a6b7 mb-4">Giải thích Chỉ số Chất lượng Không khí (AQI)</h3>
+                        <p class="text-center text-gray-600 mb-6">AQI là thang đo mức độ ô nhiễm không khí. Mỗi khoảng giá trị tương ứng với một mức độ cảnh báo sức khỏe và một màu sắc cụ thể.</p>
+                        <ul class="space-y-3">
+                            <li class="aqi-item bg-green-100 text-green-900">
+                                <span class="w-16 font-bold text-lg">0-50</span>
+                                <span class="w-5 h-5 rounded-full bg-green-500 mx-4 flex-shrink-0"></span>
+                                <span class="flex-grow">Tốt</span>
+                            </li>
+                            <li class="aqi-item bg-yellow-100 text-yellow-900">
+                                <span class="w-16 font-bold text-lg">51-100</span>
+                                <span class="w-5 h-5 rounded-full bg-yellow-500 mx-4 flex-shrink-0"></span>
+                                <span class="flex-grow">Trung bình</span>
+                            </li>
+                            <li class="aqi-item bg-orange-100 text-orange-900">
+                                <span class="w-16 font-bold text-lg">101-150</span>
+                                <span class="w-5 h-5 rounded-full bg-orange-500 mx-4 flex-shrink-0"></span>
+                                <span class="flex-grow">Kém (Nhóm nhạy cảm cần lưu ý)</span>
+                            </li>
+                            <li class="aqi-item bg-red-100 text-red-900">
+                                <span class="w-16 font-bold text-lg">151-200</span>
+                                <span class="w-5 h-5 rounded-full bg-red-600 mx-4 flex-shrink-0"></span>
+                                <span class="flex-grow">Xấu (Có hại cho sức khỏe)</span>
+                            </li>
+                            <li class="aqi-item bg-purple-100 text-purple-900">
+                                <span class="w-16 font-bold text-lg">201-300</span>
+                                <span class="w-5 h-5 rounded-full bg-purple-700 mx-4 flex-shrink-0"></span>
+                                <span class="flex-grow">Rất xấu (Rất có hại)</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="card">
+                        <h3 class="text-xl font-semibold text-center text-71a6b7 mb-4">Nguồn Ô nhiễm Nhân tạo Chính</h3>
+                        <p class="text-center text-gray-600 mb-6">Biểu đồ này minh họa tỷ trọng các hoạt động của con người góp phần vào ô nhiễm không khí toàn cầu. Di chuột qua từng phần để xem chi tiết.</p>
+                        <div class="chart-container">
+                            <canvas id="sourcesChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mt-8">
+                    <h3 class="text-xl font-semibold text-center text-71a6b7 mb-4">Các Chất Ô nhiễm Không khí Phổ biến</h3>
+                    <p class="text-center text-gray-600 mb-6 max-w-3xl mx-auto">Không khí ô nhiễm là một hỗn hợp phức tạp. Dưới đây là các chất ô nhiễm chính thường được theo dõi vì tác động trực tiếp của chúng đến sức khỏe và môi trường.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="p-4 bg-f7f3e9 rounded-lg border border-a4d2df">
+                            <h4 class="font-bold text-lg text-71a6b7">Bụi Mịn (PM₂.₅ & PM10)</h4>
+                            <p class="text-gray-700 mt-1">Các hạt rắn hoặc lỏng siêu nhỏ lơ lửng, có khả năng xâm nhập sâu vào phổi và máu. Nguồn gốc: đốt nhiên liệu, xây dựng, công nghiệp.</p>
+                        </div>
+                        <div class="p-4 bg-f7f3e9 rounded-lg border border-a4d2df">
+                            <h4 class="font-bold text-lg text-71a6b7">Ozone Tầng Mặt (O₃)</h4>
+                            <p class="text-gray-700 mt-1">Chất ô nhiễm thứ cấp, hình thành khi NOₓ và VOCs phản ứng với ánh sáng mặt trời. Là thành phần chính của sương mù quang hóa.</p>
+                        </div>
+                        <div class="p-4 bg-f7f3e9 rounded-lg border border-a4d2df">
+                            <h4 class="font-bold text-lg text-71a6b7">Sulfur Dioxide (SO₂)</h4>
+                            <p class="text-gray-700 mt-1">Phát thải từ việc đốt nhiên liệu hóa thạch (như than) trong các nhà máy điện và công nghiệp. Gây mưa axit.</p>
+                        </div>
+                        <div class="p-4 bg-f7f3e9 rounded-lg border border-a4d2df">
+                            <h4 class="font-bold text-lg text-71a6b7">Oxide của Ni-tơ (NOₓ)</h4>
+                            <p class="text-gray-700 mt-1">Sinh ra từ quá trình đốt nhiệt độ cao, chủ yếu từ khí thải xe cộ và nhà máy điện. Góp phần tạo ra O₃ và mưa axit.</p>
+                        </div>
+                        <div class="p-4 bg-f7f3e9 rounded-lg border border-a4d2df">
+                            <h4 class="font-bold text-lg text-71a6b7">Carbon Monoxide (CO)</h4>
+                            <p class="text-gray-700 mt-1">Khí độc không màu, không mùi, sinh ra từ việc đốt cháy không hoàn toàn nhiên liệu, đặc biệt là từ phương tiện giao thông.</p>
+                        </div>
+                        <div class="p-4 bg-f7f3e9 rounded-lg border border-a4d2df">
+                            <h4 class="font-bold text-lg text-71a6b7">Hợp chất hữu cơ (VOCs)</h4>
+                            <p class="text-gray-700 mt-1">Bay hơi từ sơn, dung môi, và nhiên liệu. Chúng là tiền chất quan trọng hình thành Ozone (O₃) tầng mặt.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mt-8">
+                    <h3 class="text-xl font-semibold text-center text-71a6b7 mb-4">So sánh Nồng độ Bụi mịn PM₂.₅</h3>
+                    <p class="text-center text-gray-600 mb-6 max-w-3xl mx-auto">PM₂.₅ là các hạt bụi siêu mịn, cực kỳ nguy hiểm vì chúng có thể đi sâu vào phổi và máu. Biểu đồ này so sánh nồng độ PM₂.₅ trung bình năm (µg/m³) tại một số thành phố (số liệu minh họa).</p>
+                    <div class="chart-container-bar">
+                        <canvas id="citiesChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <section id="page-impact" class="content-section">
+                <div class="card">
+                    <h2 class="text-2xl font-bold text-71a6b7 mb-4 text-center">Tác động Đa Chiều Của Ô nhiễm</h2>
+                    <p class="text-lg text-gray-700 mb-8 max-w-4xl mx-auto text-center">Ô nhiễm không khí không chỉ là một con số; nó có những hậu quả thực tế và nghiêm trọng. Phần này trình bày sơ đồ luồng đơn giản hóa, cho thấy các chất ô nhiễm chính dẫn đến các tác động tiêu cực lên cả sức khỏe con người và môi trường tự nhiên.</p>
+                    
+                    <div class="flex flex-col items-center space-y-6">
+                        <div class="p-4 bg-f7f3e9 rounded-lg shadow-md border border-a4d2df text-center">
+                            <h3 class="text-xl font-bold text-71a6b7">NGUỒN GỐC</h3>
+                            <p class="text-gray-800">Đốt nhiên liệu hóa thạch, Công nghiệp, Giao thông</p>
+                        </div>
+                        
+                        <div class="text-4xl font-light text-71a6b7">↓</div>
+
+                        <div class="p-4 bg-white rounded-lg shadow border border-bfe0e9 text-center">
+                            <h3 class="text-lg font-semibold text-gray-800">Chất ô nhiễm chính</h3>
+                            <p class="text-gray-600">PM₂.₅, SO₂, NOₓ, O₃</p>
+                        </div>
+
+                        <div class="text-4xl font-light text-71a6b7">↓</div>
+                        
+                        <div class="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-6 text-center">
+                            <div class="p-4 bg-bfe0e9 rounded-lg shadow-inner">
+                                <h3 class="text-xl font-bold text-71a6b7">TÁC ĐỘNG SỨC KHỎẺ</h3>
+                                <ul class="list-disc list-inside text-left mt-3 text-gray-800 space-y-2 p-3">
+                                    <li>Bệnh hô hấp (hen suyễn, viêm phế quản)</li>
+                                    <li>Bệnh tim mạch (đau tim, đột quỵ)</li>
+                                    <li>Ảnh hưởng hệ thần kinh</li>
+                                    <li>Tăng nguy cơ ung thư phổi</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="p-4 bg-f7f3e9 rounded-lg shadow-inner border border-a4d2df">
+                                <h3 class="text-xl font-bold text-71a6b7">TÁC ĐỘNG MÔI TRƯỜNG</h3>
+                                <ul class="list-disc list-inside text-left mt-3 text-gray-800 space-y-2 p-3">
+                                    <li>Mưa axit (phá hủy rừng và nguồn nước)</li>
+                                    <li>Hiệu ứng nhà kính (biến đổi khí hậu)</li>
+                                    <li>Phá hủy tầng Ozone (do CFCs)</li>
+                                    <li>Giảm đa dạng sinh học</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="page-solutions" class="content-section">
+                <div class="card">
+                    <h2 class="text-2xl font-bold text-71a6b7 mb-4 text-center">Các Giải Pháp Kỹ Thuật và Chính Sách</h2>
+                    <p class="text-lg text-gray-700 mb-8 max-w-4xl mx-auto text-center">Phần này đi sâu vào các chiến lược kỹ thuật và chính sách vĩ mô được sử dụng để kiểm soát ô nhiễm không khí, từ việc giảm phát thải tại nguồn cho đến công nghệ lọc không khí tiên tiến.</p>
+
+                    <!-- 4.1. Giải pháp kiểm soát nguồn thải quy mô lớn -->
+                    <div class="mb-10 p-6 bg-f7f3e9 rounded-lg border border-a4d2df">
+                        <h3 class="text-2xl font-bold text-71a6b7 mb-4">4.1. Kiểm soát Nguồn Phát thải Quy mô lớn</h3>
+                        
+                        <!-- 4.1.1. Tiêu chuẩn Khí thải Phương tiện Giao thông -->
+                        <h4 class="text-xl font-semibold text-gray-800 mt-6 mb-2">4.1.1. Tiêu chuẩn Khí thải Phương tiện Giao thông</h4>
+                        <p class="text-gray-700 mb-4">Việc áp dụng các tiêu chuẩn khí thải nghiêm ngặt (ví dụ: Euro 5) là giải pháp kỹ thuật cốt lõi. Tiêu chuẩn Euro 5 đặt ra giới hạn nghiêm ngặt:</p>
+                        <ul class="list-disc list-inside ml-4 text-gray-700 space-y-1">
+                            <li>Khí thải PM từ xe diesel: Giảm xuống còn <span class="font-mono">0.005 g/km</span>, tương đương giảm <span class="font-mono">80%</span> so với Euro 4.</li>
+                            <li>Khí thải NOₓ từ động cơ diesel: Giới hạn <span class="font-mono">0.18 g/km</span>.</li>
+                        </ul>
+                        <p class="text-sm text-gray-600 mt-3 italic">Việc giảm thiểu các chất tiền chất ô nhiễm này đóng vai trò quan trọng trong việc kiểm soát sự hình thành PM₂.₅ và sương mù quang hóa (do NOₓ là tiền chất của O₃).</p>
+
+                        <!-- 4.1.2. Phát triển Năng lượng Tái tạo (NLTT) -->
+                        <h4 class="text-xl font-semibold text-gray-800 mt-6 mb-2">4.1.2. Phát triển Năng lượng Tái tạo (NLTT)</h4>
+                        <p class="text-gray-700">Đầu tư và chuyển đổi sang các nguồn năng lượng tái tạo là giải pháp chiến lược để giải quyết ô nhiễm không khí tại nguồn. NLTT giúp giảm phát thải các chất hạt, NOₓ, và SO₂ từ các nhà máy điện truyền thống, thể hiện nguyên tắc kỹ thuật môi trường: kiểm soát ô nhiễm bền vững nhất là loại bỏ nguồn phát thải ngay từ đầu.</p>
+                    </div>
+
+                    <!-- 4.2. Công nghệ xử lý và lọc không khí -->
+                    <div class="p-6 bg-bfe0e9 rounded-lg">
+                        <h3 class="text-2xl font-bold text-71a6b7 mb-4">4.2. Công nghệ Xử lý và Lọc Không khí</h3>
+                        <p class="text-lg text-gray-700 mb-4">Công nghệ lọc không khí đóng vai trò quan trọng trong việc bảo vệ sức khỏe con người, đặc biệt trong nhà và môi trường nhạy cảm.</p>
+
+                        <!-- 4.2.1. Màng lọc HEPA -->
+                        <h4 class="text-xl font-semibold text-gray-800 mt-4 mb-2">4.2.1. Màng lọc HEPA (High Efficiency Particulate Air)</h4>
+                        <p class="text-gray-700">Tiêu chuẩn kỹ thuật quy định màng lọc HEPA phải giữ lại ít nhất <span class="font-mono">99.9%</span> những hạt có đường kính ≥ <span class="font-mono">0.3 µm</span> (PM₀.₃), đảm bảo hiệu suất lọc cao đối với bụi mịn PM₂.₅.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+                            <div class="p-3 bg-white rounded-md shadow">
+                                <p class="font-bold text-red-600">Hạn chế Kỹ thuật & Môi trường:</p>
+                                <ul class="list-disc list-inside ml-4 text-gray-700 text-sm space-y-1 mt-1">
+                                    <li>Lọc hiệu quả bụi mịn nhưng không lọc được khí (ví dụ: O₃, CO).</li>
+                                    <li>Tiêu tốn năng lượng điện.</li>
+                                </ul>
+                            </div>
+                            <div class="p-3 bg-white rounded-md shadow">
+                                <p class="font-bold text-green-600">Ưu điểm Kỹ thuật:</p>
+                                <ul class="list-disc list-inside ml-4 text-gray-700 text-sm space-y-1 mt-1">
+                                    <li>Hiệu suất cao đối với hạt lơ lửng (&gt;99.9%).</li>
+                                    <li>Độ bền và tính ổn định cao.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="page-ai-advisor" class="content-section">
+                <div class="card">
+                    <h2 class="text-2xl font-bold text-71a6b7 mb-4 text-center">AI Tư Vấn: Nhận lời khuyên Chất lượng Không khí</h2>
+                    <p class="text-lg text-gray-700 mb-6 max-w-4xl mx-auto text-center">Sử dụng mô hình AI của Google để nhận thông tin cập nhật và lời khuyên về ô nhiễm không khí dựa trên dữ liệu thời gian thực. (Lưu ý: Tính năng này yêu cầu kết nối API).</p>
+
+                    <div class="max-w-xl mx-auto">
+                        <div class="mb-4">
+                            <label for="cityInput" class="block text-sm font-medium text-gray-700 mb-2">Nhập thành phố hoặc câu hỏi về ô nhiễm:</label>
+                            <input type="text" id="cityInput" placeholder="Ví dụ: 'Chất lượng không khí Hà Nội hôm nay' hoặc 'Làm gì khi PM₂.₅ cao?'" class="w-full p-3 border border-bfe0e9 rounded-lg focus:ring-71a6b7 focus:border-71a6b7 transition duration-150">
+                        </div>
+                        <button id="getAdviceButton" class="llm-button w-full bg-71a6b7 text-white p-3 rounded-lg font-bold shadow-md hover:bg-5a8a9a flex items-center justify-center space-x-2">
+                            <span id="buttonText">Nhận Tư Vấn</span>
+                            <div id="spinner" class="spinner hidden"></div>
+                        </button>
+
+                        <div id="adviceOutput" class="advice-output mt-6 hidden">
+                            <h3 class="font-bold text-xl text-71a6b7 mb-2">Lời Khuyên AI</h3>
+                            <div id="adviceText" class="text-gray-800 whitespace-pre-wrap"></div>
+                            <div id="adviceSources" class="text-xs text-gray-500 mt-4 border-t pt-2"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- JavaScript cho tương tác và biểu đồ -->
+    <script>
+        // Hàm chuyển đổi giữa các tab
+        function switchPage(pageId) {
+            // 1. Ẩn tất cả các phần nội dung
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // 2. Hiện phần nội dung được chọn
+            const targetSection = document.getElementById(`page-${pageId}`);
+            if (targetSection) {
+                targetSection.classList.add('active');
+            }
+
+            // 3. Cập nhật trạng thái 'active' cho nút điều hướng
+            document.querySelectorAll('.nav-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            const activeButton = document.querySelector(`.nav-button[data-page="${pageId}"]`);
+            if (activeButton) {
+                activeButton.classList.add('active');
+            }
+        }
+
+        // Thiết lập sự kiện lắng nghe khi trang tải xong
+        window.onload = function () {
+            // Lắng nghe sự kiện click trên thanh điều hướng
+            document.getElementById('mainNav').addEventListener('click', function(event) {
+                if (event.target.classList.contains('nav-button')) {
+                    const pageId = event.target.dataset.page;
+                    if (pageId) {
+                        switchPage(pageId);
+                    }
+                }
+            });
+
+            // Khởi tạo biểu đồ khi trang tải
+            if (document.getElementById('sourcesChart')) {
+                initializeSourcesChart();
+            }
+            if (document.getElementById('citiesChart')) {
+                initializeCitiesChart();
+            }
+
+            // Kích hoạt logic ban đầu: 'project10a4' đã được đặt là 'active' trong HTML
+            // Không cần gọi switchPage vì class 'active' đã được thiết lập.
+        };
+
+        // Dữ liệu và logic cho biểu đồ Nguồn Gốc (Pie/Doughnut Chart)
+        function initializeSourcesChart() {
+            const ctx = document.getElementById('sourcesChart').getContext('2d');
+            const data = {
+                labels: ['Giao thông', 'Sản xuất Công nghiệp', 'Nông nghiệp', 'Đốt nhiên liệu Sinh khối'],
+                datasets: [{
+                    label: 'Tỷ trọng nguồn ô nhiễm',
+                    data: [35, 30, 20, 15], // Số liệu minh họa
+                    backgroundColor: [
+                        '#71a6b7', // Giao thông
+                        '#5a8a9a', // Công nghiệp
+                        '#bfe0e9', // Nông nghiệp
+                        '#eaf4f7'  // Sinh khối
+                    ],
+                    hoverOffset: 10
+                }]
+            };
+
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: data,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                font: {
+                                    family: 'Inter'
+                                }
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Nguồn Ô nhiễm Không khí Toàn cầu (Ước tính)',
+                            font: {
+                                size: 16,
+                                family: 'Inter'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Dữ liệu và logic cho biểu đồ So sánh PM2.5 (Bar Chart)
+        function initializeCitiesChart() {
+            const ctx = document.getElementById('citiesChart').getContext('2d');
+            const data = {
+                labels: ['Hà Nội', 'TP.HCM', 'Jakarta', 'Delhi', 'London'],
+                datasets: [{
+                    label: 'PM₂.₅ trung bình năm (µg/m³)',
+                    data: [35, 25, 40, 90, 12], // Số liệu minh họa
+                    backgroundColor: [
+                        '#71a6b7',
+                        '#5a8a9a',
+                        '#bfe0e9',
+                        '#eaf4f7',
+                        '#42b883'
+                    ],
+                    borderColor: '#333',
+                    borderWidth: 1
+                }]
+            };
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: data,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y', // Biểu đồ cột ngang
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'So sánh Nồng độ PM₂.₅ Trung bình tại các Thành phố (µg/m³)',
+                            font: {
+                                size: 16,
+                                family: 'Inter'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Nồng độ PM₂.₅ (µg/m³)',
+                                font: {
+                                    family: 'Inter'
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // LOGIC CHO AI TƯ VẤN (Sử dụng API Gemini)
+        document.addEventListener('DOMContentLoaded', () => {
+            const button = document.getElementById('getAdviceButton');
+            const input = document.getElementById('cityInput');
+            const outputDiv = document.getElementById('adviceOutput');
+            const outputText = document.getElementById('adviceText');
+            const outputSources = document.getElementById('adviceSources');
+            const spinner = document.getElementById('spinner');
+            const buttonText = document.getElementById('buttonText');
+
+            // --- Cấu hình API Gemini ---
+            const apiKey = ""; // API Key sẽ được Canvas cung cấp
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${AIzaSyAKRV9z2kI9KN03tB4Iiplo9XIdFegTTbM}`;
+            
+            const systemPrompt = "Bạn là một cố vấn môi trường chuyên nghiệp, tập trung vào ô nhiễm không khí và sức khỏe cộng đồng. Hãy trả lời câu hỏi của người dùng bằng tiếng Việt, cung cấp lời khuyên chính xác, dễ hiểu và dựa trên thông tin cập nhật (nếu có). Trả lời một cách ngắn gọn, súc tích và thân thiện.";
+            
+            const MAX_RETRIES = 3;
+            const INITIAL_DELAY_MS = 1000; // 1 second
+
+            // Hàm thực hiện fetch với exponential backoff
+            async function fetchWithRetry(payload) {
+                for (let i = 0; i < MAX_RETRIES; i++) {
+                    try {
+                        const response = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+
+                        if (response.ok) {
+                            return response;
+                        }
+
+                        // Nếu lỗi 429 (Too Many Requests) hoặc lỗi máy chủ, thử lại
+                        if (response.status === 429 || response.status >= 500) {
+                            const delay = INITIAL_DELAY_MS * (2 ** i) + Math.random() * 1000;
+                            console.warn(`Request failed with status ${response.status}. Retrying in ${delay.toFixed(0)}ms...`);
+                            await new Promise(resolve => setTimeout(resolve, delay));
+                            continue; // Bắt đầu vòng lặp tiếp theo (thử lại)
+                        } else {
+                            // Các lỗi khác (ví dụ: 400, 404), thoát khỏi vòng lặp và ném lỗi
+                            throw new Error(`API returned status ${response.status}: ${await response.text()}`);
+                        }
+                    } catch (error) {
+                        if (i === MAX_RETRIES - 1) {
+                            throw new Error(`API call failed after ${MAX_RETRIES} attempts: ${error.message}`);
+                        }
+                        // Nếu là lỗi mạng, cũng chờ và thử lại
+                        const delay = INITIAL_DELAY_MS * (2 ** i) + Math.random() * 1000;
+                        console.warn(`Network error: ${error.message}. Retrying in ${delay.toFixed(0)}ms...`);
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                    }
+                }
+            }
+
+
+            // Hàm xử lý yêu cầu tư vấn AI thực
+            const handleAdviceRequest = async () => {
+                const userQuery = input.value.trim();
+                if (!userQuery) {
+                    outputText.innerHTML = "Vui lòng nhập câu hỏi hoặc tên thành phố để nhận lời khuyên.";
+                    outputDiv.classList.remove('hidden');
+                    return;
+                }
+
+                // Hiển thị trạng thái tải
+                button.disabled = true;
+                spinner.classList.remove('hidden');
+                buttonText.textContent = 'Đang tìm kiếm...';
+                outputDiv.classList.remove('hidden');
+                outputText.textContent = 'Đang chờ phản hồi từ AI...';
+                outputSources.innerHTML = '';
+                
+                try {
+                    // Cấu trúc payload cho API Gemini với Google Search Grounding
+                    const payload = {
+                        contents: [{ parts: [{ text: userQuery }] }],
+                        tools: [{ "google_search": {} }], // Bật tìm kiếm Google
+                        systemInstruction: {
+                            parts: [{ text: systemPrompt }]
+                        },
+                    };
+                    
+                    const response = await fetchWithRetry(payload);
+                    const result = await response.json();
+                    
+                    const candidate = result.candidates?.[0];
+                    
+                    if (candidate && candidate.content?.parts?.[0]?.text) {
+                        const text = candidate.content.parts[0].text;
+                        let sources = [];
+                        const groundingMetadata = candidate.groundingMetadata;
+
+                        if (groundingMetadata && groundingMetadata.groundingAttributions) {
+                            sources = groundingMetadata.groundingAttributions
+                                .map(attribution => ({
+                                    uri: attribution.web?.uri,
+                                    title: attribution.web?.title,
+                                }))
+                                .filter(source => source.uri && source.title); // Chỉ lấy nguồn hợp lệ
+                        }
+
+                        // Hiển thị kết quả
+                        outputText.innerHTML = text.replace(/\n/g, '<br>');
+                        
+                        if (sources.length > 0) {
+                            const sourceHtml = '<strong>Nguồn tham khảo:</strong><ul class="list-disc ml-5 mt-2 space-y-1">' + 
+                                sources.map(s => `<li><a href="${s.uri}" target="_blank" class="text-blue-600 hover:text-blue-800">${s.title}</a></li>`).join('') +
+                                '</ul>';
+                            outputSources.innerHTML = sourceHtml;
+                        } else {
+                            outputSources.innerHTML = 'Nguồn: Phản hồi dựa trên kiến thức chung của mô hình.';
+                        }
+
+                    } else {
+                        // Xử lý trường hợp không có nội dung được tạo
+                        console.error('Lỗi API: Không tìm thấy nội dung phản hồi hợp lệ.', result);
+                        outputText.textContent = "Xin lỗi, AI không thể tạo ra lời khuyên cho yêu cầu này. Vui lòng thử lại với một câu hỏi khác.";
+                        outputSources.textContent = '';
+                    }
+
+                } catch (error) {
+                    console.error("Lỗi gọi API:", error);
+                    outputText.textContent = `Xin lỗi, đã xảy ra lỗi trong quá trình kết nối: ${error.message}.`;
+                    outputSources.textContent = '';
+                } finally {
+                    // Kết thúc trạng thái tải
+                    button.disabled = false;
+                    spinner.classList.add('hidden');
+                    buttonText.textContent = 'Nhận Tư Vấn';
+                }
+            };
+
+            if (button) {
+                button.addEventListener('click', handleAdviceRequest);
+            }
+        });
+
+    </script>
+</body>
+</html>
