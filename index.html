@@ -414,6 +414,9 @@
     <script>
         // Hàm chuyển đổi giữa các tab
         function switchPage(pageId) {
+            // Cuộn lên đầu trang
+            window.scrollTo(0, 0);
+
             // 1. Ẩn tất cả các phần nội dung
             document.querySelectorAll('.content-section').forEach(section => {
                 section.classList.remove('active');
