@@ -2,7 +2,7 @@
 
 ## Tóm tắt
 
-Dự án **lop10a4khtn** là một kho lưu trữ các tệp HTML phục vụ nhu cầu học tập và chia sẻ tài liệu cho lớp 10A4, Khối Khoa học Tự nhiên (KHTN). Toàn bộ mã nguồn trong repository này đều sử dụng ngôn ngữ HTML.
+Dự án **lop10a4khtn** là một kho lưu trữ các tệp HTML phục vụ cho cuộc thi KHKT của lớp 10A4, Khối Khoa học Tự nhiên (KHTN). Toàn bộ mã nguồn trong repository này đều sử dụng ngôn ngữ HTML.
 
 ## Đề tài
 
